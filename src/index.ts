@@ -1,5 +1,6 @@
 import express, { Request, Response } from "express";
 import userRouts from "./Routes/UserRoutes";
+import authRoutes from "./Routes/AuthRouts";
 
 // Load environment variables
 // dotenv.config();
@@ -16,6 +17,7 @@ app.get("/", (req: Request, res: Response) => {
   res.send("Welcome to the Express.js TypeScript server!");
 });
 app.use("/user", userRouts);
+app.use("/auth", authRoutes);
 
 // Start the server
 app.listen(PORT, () => {
