@@ -22,8 +22,7 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
     status: 1,
     body: null,
   };
-  res.status(500);
-  res.json(r);
+  res.status(500).json(r);
 });
 
 const PORT = 3000;

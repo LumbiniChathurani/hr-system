@@ -2,9 +2,19 @@ import express, { NextFunction, Request, Response } from "express";
 import db from "../config/db.js";
 import bcrypt from "bcryptjs";
 import UserService from "../service/userService.js";
-import { getOKResponse } from "../util/ResponseUtil.js";
+import { getOKResponse, ResponseType } from "../util/ResponseUtil.js";
+import { comparePassword } from "../util/passwordUtils.js";
+import { generateToken } from "../util/tokenUtil.js";
 
 const router = express.Router();
+
+type UserReturnType = {
+  userId: number;
+  userRole: string;
+  userName: string;
+  email: string;
+  profileImgUrl: string;
+};
 
 router.post("/login", async (req: Request, res: Response): Promise<void> => {
   const { email, password } = req.body;
@@ -17,36 +27,27 @@ router.post("/login", async (req: Request, res: Response): Promise<void> => {
 
     if ((userResults as any[]).length > 0) {
       const user = (userResults as any)[0];
-      const match = await bcrypt.compare(password, user.password);
+      const match = await comparePassword(password, user.password);
 
       if (match) {
-        user.profile_image = `/uploads/${user.profile_image}`;
-        res.json({ message: "Login successful", role: user.role, user });
-        return;
-      } else {
-        res.status(401).json({ message: "Invalid password" });
-        return;
-      }
-    }
+        //if match generate token
 
-    const [recruiterResults] = await db.execute(
-      "SELECT * FROM recruiters WHERE email = ?",
-      [email]
-    );
-
-    if ((recruiterResults as any[]).length > 0) {
-      const recruiter = (recruiterResults as any)[0];
-      const match = await bcrypt.compare(password, recruiter.password);
-
-      if (match) {
-        res.json({
-          message: "Login successful",
-          role: "recruiter",
-          user: recruiter,
+        const token = await generateToken({
+          email,
+          userName: user.userName,
+          id: user.id,
+          userRole: user.userRole,
         });
+
+        const r: ResponseType = {
+          body: { token, userRole: user.userRole },
+          message: "Logging success",
+          status: 0,
+        };
+        res.json(r);
         return;
       } else {
-        res.status(401).json({ message: "Invalid password" });
+        throw new Error("User not found");
         return;
       }
     }
