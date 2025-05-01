@@ -1,6 +1,8 @@
-import express, { Request, Response } from "express";
+import express, { NextFunction, Request, Response } from "express";
 import db from "../config/db.js";
 import bcrypt from "bcryptjs";
+import UserService from "../service/userService.js";
+import { getOKResponse } from "../util/ResponseUtil.js";
 
 const router = express.Router();
 
@@ -18,6 +20,7 @@ router.post("/login", async (req: Request, res: Response): Promise<void> => {
       const match = await bcrypt.compare(password, user.password);
 
       if (match) {
+        user.profile_image = `/uploads/${user.profile_image}`;
         res.json({ message: "Login successful", role: user.role, user });
         return;
       } else {
@@ -54,5 +57,19 @@ router.post("/login", async (req: Request, res: Response): Promise<void> => {
     res.status(500).json({ message: "Server error" });
   }
 });
+
+router.post(
+  "/register",
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const body = await req.body;
+      await UserService.createUserAccount(body);
+      res.send(getOKResponse("User created"));
+    } catch (error) {
+      console.log(error);
+      next(error);
+    }
+  }
+);
 
 export default router;

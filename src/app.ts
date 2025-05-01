@@ -1,6 +1,7 @@
-import express from "express";
+import express, { NextFunction, Request, Response } from "express";
 import authRoutes from "./routes/auth.js";
 import cors from "cors";
+import { ResponseType } from "./util/ResponseUtil.js";
 
 const app = express();
 app.use(
@@ -11,6 +12,19 @@ app.use(
 );
 app.use(express.json());
 app.use("/api", authRoutes);
+app.use("/uploads", express.static("uploads"));
+
+//handle error responses
+
+app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+  const r: ResponseType = {
+    message: err.message,
+    status: 1,
+    body: null,
+  };
+  res.status(500);
+  res.json(r);
+});
 
 const PORT = 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
