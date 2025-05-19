@@ -2,6 +2,7 @@ import express, { NextFunction, Request, Response } from "express";
 import authRoutes from "./routes/auth.js";
 import cors from "cors";
 import { ResponseType } from "./util/ResponseUtil.js";
+import employeeRoutes from "./routes/employee.js";
 
 const app = express();
 app.use(
@@ -12,6 +13,7 @@ app.use(
 );
 app.use(express.json());
 app.use("/api", authRoutes);
+app.use("/api/employees", employeeRoutes);
 app.use("/uploads", express.static("uploads"));
 
 //handle error responses
