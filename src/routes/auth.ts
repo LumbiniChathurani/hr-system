@@ -39,8 +39,9 @@ router.post("/login", async (req: Request, res: Response): Promise<void> => {
           userRole: user.userRole,
         });
 
+        delete user.password;
         const r: ResponseType = {
-          body: { token, userRole: user.userRole },
+          body: { token, userRole: user.userRole, user },
           message: "Logging success",
           status: 0,
         };

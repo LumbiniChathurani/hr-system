@@ -16,3 +16,16 @@ ADD COLUMN department VARCHAR(255) AFTER userRole;
 
 ALTER TABLE users MODIFY userRole VARCHAR(50) NOT NULL;
 
+CREATE TABLE payroll (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  month_year VARCHAR(7) NOT NULL, -- e.g., '2025-04'
+  base_salary DECIMAL(10, 2) NOT NULL,
+  bonus DECIMAL(10, 2) DEFAULT 0,
+  deduction DECIMAL(10, 2) DEFAULT 0,
+  net_pay DECIMAL(10, 2) GENERATED ALWAYS AS (base_salary + bonus - deduction) STORED,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+

@@ -56,19 +56,49 @@ router.get("/:id", (req: Request, res: Response) => {
 });
 
 // UPDATE employee
-router.put("/:id", (req: Request, res: Response) => {
-  const index = employees.findIndex((e) => e.id == req.params.id);
+router.put("/:id", async (req: Request, res: Response) => {
+  const { name, email, password, role, department } = req.body;
+  const { id } = req.params;
 
-  employees[index] = { ...employees[index], ...req.body };
-  res.json({ message: "Employee updated", employee: employees[index] });
+  try {
+    // Update query (optionally skip password if empty)
+    if (password && password.trim() !== "") {
+      await db.query(
+        "UPDATE users SET userName = ?, email = ?, password = ?, userRole = ?, department = ? WHERE id = ?",
+        [name, email, password, role, department, id]
+      );
+    } else {
+      await db.query(
+        "UPDATE users SET userName = ?, email = ?, userRole = ?, department = ? WHERE id = ?",
+        [name, email, role, department, id]
+      );
+    }
+
+    // Fetch updated employee
+    const [rows] = await db.query("SELECT * FROM users WHERE id = ?", [id]);
+
+    const updatedEmployee = Array.isArray(rows) ? rows[0] : null;
+
+    res.json({ message: "Employee updated", employee: updatedEmployee });
+  } catch (err) {
+    console.error("Error updating employee:", err);
+    res.status(500).json({ error: "Failed to update employee" });
+  }
 });
 
 // DELETE employee
-router.delete("/:id", (req: Request, res: Response) => {
-  const index = employees.findIndex((e) => e.id == req.params.id);
+// DELETE /api/employees/:id
+router.delete("/:id", async (req: Request, res: Response) => {
+  const { id } = req.params;
 
-  const deleted = employees.splice(index, 1);
-  res.json({ message: "Employee deleted", employee: deleted[0] });
+  try {
+    const [result] = await db.query("DELETE FROM users WHERE id = ?", [id]);
+
+    res.json({ message: "Employee deleted" });
+  } catch (error) {
+    console.error("Error deleting employee:", error);
+    res.status(500).json({ error: "Failed to delete employee" });
+  }
 });
 
 export default router;
