@@ -3,7 +3,7 @@ import authRoutes from "./routes/auth.js";
 import cors from "cors";
 import { ResponseType } from "./util/ResponseUtil.js";
 import employeeRoutes from "./routes/employee.js";
-import payrollRoutes from "./routes/payroll.js";
+import payrollRoutes from "./routes/payrollRoutes.js";
 
 const app = express();
 app.use(

@@ -17,15 +17,20 @@ ADD COLUMN department VARCHAR(255) AFTER userRole;
 ALTER TABLE users MODIFY userRole VARCHAR(50) NOT NULL;
 
 CREATE TABLE payroll (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  user_id INT NOT NULL,
-  month_year VARCHAR(7) NOT NULL, -- e.g., '2025-04'
-  base_salary DECIMAL(10, 2) NOT NULL,
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  employee_id INT,
+  month VARCHAR(20),
+  hours_worked INT DEFAULT 0,
   bonus DECIMAL(10, 2) DEFAULT 0,
-  deduction DECIMAL(10, 2) DEFAULT 0,
-  net_pay DECIMAL(10, 2) GENERATED ALWAYS AS (base_salary + bonus - deduction) STORED,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  deductions DECIMAL(10, 2) DEFAULT 0,
+  status ENUM('Pending', 'Generated', 'Paid') DEFAULT 'Pending',
+  FOREIGN KEY (employee_id) REFERENCES employees(id)
 );
+
+ALTER TABLE users
+ADD COLUMN pay_type ENUM('monthly', 'hourly') NOT NULL DEFAULT 'monthly',
+ADD COLUMN base_salary DECIMAL(10, 2),
+ADD COLUMN hourly_rate DECIMAL(10, 2);
+
 
 
