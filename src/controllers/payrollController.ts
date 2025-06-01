@@ -4,7 +4,12 @@ import db from "../config/db.js"; // uses `default` export
 // GET /api/payroll
 export const getPayroll = async (req: Request, res: Response) => {
   try {
-    const [rows] = await db.query(`
+    const month = parseInt(req.query.month?.toString() ?? "0");
+    const year = parseInt(req.query.year?.toString() ?? "0");
+
+    console.log("month: ", month, " ,year: ", year);
+    const [rows] = await db.query(
+      `
      SELECT 
   p.*,
   e.id as userId,
@@ -13,10 +18,9 @@ export const getPayroll = async (req: Request, res: Response) => {
   e.pay_type, 
   e.base_salary, 
   e.hourly_rate 
-FROM payroll p
-RIGHT JOIN users e ON p.employee_id = e.id;
-
-    `);
+FROM users e LEFT JOIN payroll p ON p.employee_id = e.id AND p.month_num=? AND p.year_num=?`,
+      [month, year]
+    );
     console.log(rows);
     res.json(rows);
   } catch (error) {
