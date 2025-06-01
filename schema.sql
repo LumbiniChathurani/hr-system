@@ -32,5 +32,43 @@ ADD COLUMN pay_type ENUM('monthly', 'hourly') NOT NULL DEFAULT 'monthly',
 ADD COLUMN base_salary DECIMAL(10, 2),
 ADD COLUMN hourly_rate DECIMAL(10, 2);
 
+USE hrsystem;
+CREATE TABLE leaves (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  leave_type ENUM('Annual Leave', 'Sick Leave', 'Emergency Leave') NOT NULL,
+  start_date DATE NOT NULL,
+  end_date DATE NOT NULL,
+  reason TEXT,
+  status ENUM('Pending', 'Approved', 'Rejected') DEFAULT 'Pending',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+USE hrsystem;
+CREATE TABLE applicants (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    job_id INT,
+    applicant_name VARCHAR(100),
+    email VARCHAR(100),
+    resume_link TEXT,
+    applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE
+);
+USE hrsystem;
+CREATE TABLE jobs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    job_title VARCHAR(100) NOT NULL,
+    department VARCHAR(100) NOT NULL,
+    status ENUM('Open', 'Closed') NOT NULL DEFAULT 'Open',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+USE hrsystem;
+ALTER TABLE jobs
+ADD COLUMN job_description TEXT AFTER job_title;
+
+
 
 
