@@ -1,6 +1,7 @@
-import { Router, Request, Response } from "express";
+import { Router, Request, Response, NextFunction } from "express";
 import db from "../config/db.js";
 import bcrypt from "bcryptjs";
+import { hashPassword } from "../util/passwordUtils.js";
 
 const router = Router();
 
@@ -113,5 +114,27 @@ router.delete("/:id", async (req: Request, res: Response) => {
     res.status(500).json({ error: "Failed to delete employee" });
   }
 });
+
+router.patch(
+  "/new-password",
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { newPassword, userId } = req.body;
+
+      console.log("new password: ", newPassword, ", userID: ", userId);
+      if (!newPassword || !userId)
+        throw new Error("New password and user id is required");
+
+      const [result] = await db.execute(
+        "UPDATE users SET password=? WHERE id=?",
+        [await hashPassword(newPassword), userId]
+      );
+      res.send("Password Updated");
+    } catch (error) {
+      console.error(error);
+      next(error);
+    }
+  }
+);
 
 export default router;
