@@ -84,3 +84,8 @@ SET
 ALTER TABLE payroll
 MODIFY COLUMN month_num TINYINT UNSIGNED NOT NULL,
 MODIFY COLUMN year_num SMALLINT UNSIGNED NOT NULL;
+
+-- Add admin image to users table manually
+UPDATE hrsystem.users
+SET profile_image = 'http://localhost:3000/uploads/121.jpg'
+WHERE id = 3;

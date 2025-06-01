@@ -50,9 +50,22 @@ router.get("/", async (_req: Request, res: Response) => {
 });
 
 // READ one employee
-router.get("/:id", (req: Request, res: Response) => {
-  const employee = employees.find((e) => e.id == req.params.id);
-  res.json(employee);
+router.get("/:id", async (req: Request, res: Response) => {
+  const userId = req.params.id;
+  console.log("user id: ", userId);
+  try {
+    if (!userId || !parseInt(userId)) {
+      throw new Error("");
+    }
+  } catch (error) {
+    console.error(error);
+    throw new Error("Invalid user id type");
+  }
+
+  const [result] = await db.query("SELECT * FROM users WHERE id=?", [userId]);
+
+  console.log("Employee result: ", result);
+  res.json((result as any)?.[0] ?? {});
 });
 
 // UPDATE employee

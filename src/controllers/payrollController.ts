@@ -44,9 +44,16 @@ export const markAsPaid = async (req: Request, res: Response) => {
 
 //Update payroll details
 export const updatePayroll = async (req: Request, res: Response) => {
-  let { base_salary, bonus, deductions, pay_type, employee_id, hourly_rate } =
-    req.body;
-  const payrollId = req.params.payrollId;
+  let {
+    base_salary,
+    bonus,
+    deductions,
+    pay_type,
+    employee_id,
+    hourly_rate,
+    month_num,
+    year_num,
+  } = req.body;
 
   console.log(
     base_salary,
@@ -59,24 +66,40 @@ export const updatePayroll = async (req: Request, res: Response) => {
   );
   try {
     // Update payroll table (only the columns that actually exist there)
+    if (!month_num || !year_num) throw new Error("Month and year is required");
+
     const [rows] = await db.query(
-      "SELECT * FROM hrsystem.payroll WHERE employee_id=?",
-      [employee_id]
+      "SELECT * FROM hrsystem.payroll WHERE employee_id=? AND month_num=? AND year_num=?",
+      [employee_id, month_num, year_num]
     );
     if (!rows || !(rows as any)?.length) {
       console.log("creating payroll entry since entry not found");
-      const [results] = await db.execute(
-        "INSERT INTO payroll (employee_id,month,hours_worked,bonus,deductions,status) VALUES(?,?,?,?,?,?)",
-        [employee_id, "April", 160, bonus, deductions, "Pending"]
+      const [results]: any = await db.execute(
+        "INSERT INTO payroll (employee_id, month, hours_worked, bonus, deductions, status, month_num, year_num) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        [
+          employee_id,
+          "April",
+          160,
+          bonus,
+          deductions,
+          "Pending",
+          month_num,
+          year_num,
+        ]
       );
 
-      console.log(results);
-    }
+      const insertedId = results.insertId;
+      console.log("Inserted payroll ID:", insertedId);
 
-    await db.execute(
-      "UPDATE payroll SET bonus = ?, deductions = ? WHERE id = ?",
-      [bonus, deductions, payrollId]
-    );
+      console.log(results);
+    } else {
+      //updating the existing one if payroll entry already exists
+
+      await db.execute(
+        "UPDATE payroll SET bonus = ?, deductions = ? WHERE employee_id = ? AND month_num=? AND year_num=?",
+        [bonus, deductions, employee_id, month_num, year_num]
+      );
+    }
 
     // Update users table (where pay_type and base_salary actually belong)
     //if hourly_rate is imposed set base salary to zero. if no salary type is found throw error
