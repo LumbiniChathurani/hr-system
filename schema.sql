@@ -69,6 +69,18 @@ USE hrsystem;
 ALTER TABLE jobs
 ADD COLUMN job_description TEXT AFTER job_title;
 
+-- Step 1: Add columns allowing NULL initially
+ALTER TABLE payroll
+ADD COLUMN month_num TINYINT UNSIGNED NULL AFTER STATUS,
+ADD COLUMN year_num SMALLINT UNSIGNED NULL AFTER month_num;
 
+-- Step 2: Update existing rows with default values (e.g., current month/year)
+UPDATE payroll
+SET 
+    month_num = MONTH(CURRENT_DATE),
+    year_num = YEAR(CURRENT_DATE);
 
-
+-- Step 3: Modify columns to enforce NOT NULL
+ALTER TABLE payroll
+MODIFY COLUMN month_num TINYINT UNSIGNED NOT NULL,
+MODIFY COLUMN year_num SMALLINT UNSIGNED NOT NULL;
