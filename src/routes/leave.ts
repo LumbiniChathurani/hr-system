@@ -1,4 +1,4 @@
-import express from "express";
+import express, { NextFunction, Request, Response } from "express";
 import db from "../config/db.js"; // your mysql2 connection file
 const router = express.Router();
 
@@ -20,13 +20,14 @@ router.get("/", async (req, res) => {
 
 // POST new leave request
 router.post("/", async (req, res) => {
-  const { leave_type, start_date, end_date, reason } = req.body;
+  const { leave_type, start_date, end_date, reason, userId } = req.body;
 
+  if (!userId) throw new Error("user id is required");
   try {
     const [result] = await db.query(
       `INSERT INTO leaves (user_id, leave_type, start_date, end_date, reason) 
        VALUES (?, ?, ?, ?, ?)`,
-      [TEMP_USER_ID, leave_type, start_date, end_date, reason]
+      [userId, leave_type, start_date, end_date, reason]
     );
     res.status(201).json({
       message: "Leave request submitted",
@@ -63,5 +64,22 @@ router.patch("/:id/status", async (req, res) => {
     }
   }
 });
+
+router.get(
+  "/my-leaves/:id",
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const userId = req.params.id;
+      if (!userId) throw new Error("Invalid user id type");
+      const [result] = await db.query("SELECT * FROM leaves WHERE user_id=?", [
+        userId,
+      ]);
+      res.json(result);
+    } catch (error) {
+      console.error(error);
+      next(new Error("Failed loading user leaves"));
+    }
+  }
+);
 
 export default router;
